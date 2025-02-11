@@ -1,17 +1,10 @@
 function sendMessage() {
     let message = document.getElementById("messageInput").value.trim();
-    let fileInput = document.getElementById("fileInput");
     let chatbox = document.getElementById("chatbox");
 
-    if (message === "" && fileInput.files.length === 0) return;
+    if (message === "") return;
 
-    appendMessage("You", message || "[File Uploaded]", "user");
-
-    let formData = new FormData();
-    formData.append("message", message);
-    if (fileInput.files.length > 0) {
-        formData.append("file", fileInput.files[0]);
-    }
+    appendMessage("You", message, "user");
 
     // Show typing indicator
     let typingIndicator = document.createElement("p");
@@ -22,18 +15,16 @@ function sendMessage() {
 
     fetch("https://aish-jy9f.onrender.com/chat", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
     })
     .then(response => response.json())
     .then(data => {
         chatbox.removeChild(typingIndicator); // Remove typing indicator
 
-        console.log("Response:", data); // Debugging: Print full response
-
-        if (data.response) {
-            appendMessage("AI", data.response, "ai");
-        } else if (data.choices && data.choices[0].message.content) {
-            appendMessage("AI", data.choices[0].message.content, "ai");
+        if (data.choices && data.choices[0].message.content) {
+            let reply = data.choices[0].message.content;
+            appendMessage("AI", reply, "ai");
         } else {
             appendMessage("AI", "Error: Unexpected response format", "ai");
         }
@@ -45,5 +36,23 @@ function sendMessage() {
     });
 
     document.getElementById("messageInput").value = "";
-    fileInput.value = "";
 }
+
+function appendMessage(sender, text, type) {
+    let chatbox = document.getElementById("chatbox");
+    let messageElement = document.createElement("div");
+    messageElement.classList.add("message", type);
+    messageElement.innerHTML = `<b>${sender}:</b> ${text}`;
+    chatbox.appendChild(messageElement);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function handleEnter(event) {
+    if (event.key === "Enter") sendMessage();
+}
+
+// Dark Mode Toggle
+document.getElementById("themeToggle").addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+    this.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+});
