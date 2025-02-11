@@ -6,7 +6,6 @@ function sendMessage() {
 
     appendMessage("You", message, "user");
 
-    // Show typing indicator
     let typingIndicator = document.createElement("p");
     typingIndicator.classList.add("typing");
     typingIndicator.textContent = "AI is typing...";
@@ -20,8 +19,7 @@ function sendMessage() {
     })
     .then(response => response.json())
     .then(data => {
-        chatbox.removeChild(typingIndicator); // Remove typing indicator
-
+        chatbox.removeChild(typingIndicator);
         if (data.choices && data.choices[0].message.content) {
             let reply = data.choices[0].message.content;
             appendMessage("AI", reply, "ai");
@@ -51,7 +49,6 @@ function handleEnter(event) {
     if (event.key === "Enter") sendMessage();
 }
 
-// Dark Mode Toggle
 document.getElementById("themeToggle").addEventListener("click", function () {
     document.body.classList.toggle("dark-mode");
     this.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
