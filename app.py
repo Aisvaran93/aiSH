@@ -4,6 +4,7 @@ from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
+
 @app.route("/", methods=["GET"])
 def home():
     return "Flask API is running!", 200
@@ -11,10 +12,10 @@ def home():
 CORS(app)
 
 # Load OpenAI API key from environment variable
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "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")
- 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Correctly using env variable
+
 if not OPENAI_API_KEY:
-    raise ValueError("🚨 ERROR: OpenAI API Key is not set! Set it using `set OPENAI_API_KEY=your-api-key`.")
+    raise ValueError("🚨 ERROR: OpenAI API Key is not set! Add it in Render's environment variables.")
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
@@ -65,4 +66,3 @@ def chat():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Use Render's port
     app.run(debug=True, host="0.0.0.0", port=port)
-
