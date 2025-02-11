@@ -1,40 +1,58 @@
 function sendMessage() {
-    let message = document.getElementById("messageInput").value;
+    let message = document.getElementById("messageInput").value.trim();
     let chatbox = document.getElementById("chatbox");
 
-    if (!message.trim()) {
-        return; // Prevent sending empty messages
-    }
+    if (message === "") return;
 
-    chatbox.innerHTML += `<p><b>You:</b> ${message}</p>`;
+    appendMessage("You", message, "user");
+
+    // Show typing indicator
+    let typingIndicator = document.createElement("p");
+    typingIndicator.classList.add("typing");
+    typingIndicator.textContent = "AI is typing...";
+    chatbox.appendChild(typingIndicator);
+    chatbox.scrollTop = chatbox.scrollHeight;
 
     fetch("https://aish-jy9f.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message })
     })
-    .then(response => {
-        console.log("Response received:", response); // Log the full response
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log("Response JSON:", data); // Log the JSON response
+        chatbox.removeChild(typingIndicator); // Remove typing indicator
 
-        // Check if API response has expected structure
-        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        if (data.choices && data.choices[0].message.content) {
             let reply = data.choices[0].message.content;
-            chatbox.innerHTML += `<p><b>AI:</b> ${reply}</p>`;
+            appendMessage("AI", reply, "ai");
         } else {
-            chatbox.innerHTML += `<p><b>AI:</b> Error: Unexpected response format</p>`;
-            console.error("Unexpected response format:", data);
+            appendMessage("AI", "Error: Unexpected response format", "ai");
         }
-
-        chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the latest message
     })
     .catch(error => {
-        console.error("Fetch Error:", error);
-        chatbox.innerHTML += `<p><b>AI:</b> Error: Failed to connect to AI</p>`;
+        chatbox.removeChild(typingIndicator);
+        appendMessage("AI", "Error: Unable to connect to AI server.", "ai");
+        console.error("Error:", error);
     });
 
-    document.getElementById("messageInput").value = ""; // Clear input field
+    document.getElementById("messageInput").value = "";
 }
+
+function appendMessage(sender, text, type) {
+    let chatbox = document.getElementById("chatbox");
+    let messageElement = document.createElement("div");
+    messageElement.classList.add("message", type);
+    messageElement.innerHTML = `<b>${sender}:</b> ${text}`;
+    chatbox.appendChild(messageElement);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function handleEnter(event) {
+    if (event.key === "Enter") sendMessage();
+}
+
+// Dark Mode Toggle
+document.getElementById("themeToggle").addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+    this.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+});
