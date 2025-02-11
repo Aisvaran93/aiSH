@@ -12,7 +12,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Flask API is running!", 200
+    return jsonify({"status": "Flask API is running!"})
 
 # Load OpenAI API key from environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -29,7 +29,6 @@ def chat():
     user_message = request.form.get("message", "")
     uploaded_file = request.files.get("file")
 
-    # Handle File Upload
     if uploaded_file:
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], uploaded_file.filename)
         uploaded_file.save(file_path)
@@ -54,14 +53,16 @@ def chat():
 
         try:
             response = requests.post(OPENAI_URL, json=payload, headers=headers, timeout=10)
+            ai_response = response.json()
 
             if response.status_code == 200:
-                return jsonify(response.json())
+                return jsonify({"response": ai_response["choices"][0]["message"]["content"]})  
             else:
-                print(f"⚠️ Model {model} failed: {response.text}")
+                print(f"⚠️ Model {model} failed: {ai_response}")
+                continue  
 
         except requests.exceptions.RequestException as e:
-            print(f"⚠️ Error using model {model}: {str(e)}")
+            print(f"⚠️ Error using model {model}: {str(e)}")  
 
     return jsonify({"error": "All models failed. Check your API key or OpenAI status."}), 500
 
