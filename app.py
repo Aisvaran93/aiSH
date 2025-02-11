@@ -4,6 +4,10 @@ from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
+@app.route("/", methods=["GET"])
+def home():
+    return "Flask API is running!", 200
+
 CORS(app)
 
 # Load OpenAI API key from environment variable
