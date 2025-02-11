@@ -59,4 +59,6 @@ def chat():
     return jsonify({"error": "All models failed. Check your API key or OpenAI status."}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))  # Use Render's port
+    app.run(debug=True, host="0.0.0.0", port=port)
+
