@@ -28,8 +28,12 @@ function sendMessage() {
     .then(data => {
         chatbox.removeChild(typingIndicator); // Remove typing indicator
 
+        console.log("Response:", data); // Debugging: Print full response
+
         if (data.response) {
             appendMessage("AI", data.response, "ai");
+        } else if (data.choices && data.choices[0].message.content) {
+            appendMessage("AI", data.choices[0].message.content, "ai");
         } else {
             appendMessage("AI", "Error: Unexpected response format", "ai");
         }
@@ -43,22 +47,3 @@ function sendMessage() {
     document.getElementById("messageInput").value = "";
     fileInput.value = "";
 }
-
-function appendMessage(sender, text, type) {
-    let chatbox = document.getElementById("chatbox");
-    let messageElement = document.createElement("div");
-    messageElement.classList.add("message", type);
-    messageElement.innerHTML = `<b>${sender}:</b> ${text}`;
-    chatbox.appendChild(messageElement);
-    chatbox.scrollTop = chatbox.scrollHeight;
-}
-
-function handleEnter(event) {
-    if (event.key === "Enter") sendMessage();
-}
-
-// Dark Mode Toggle
-document.getElementById("themeToggle").addEventListener("click", function () {
-    document.body.classList.toggle("dark-mode");
-    this.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
-});
