@@ -85,3 +85,11 @@ def upload_file():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)
+
+
+import sys
+
+print(f"🚀 Using model: {DEFAULT_MODEL}", flush=True)  # Ensure log is flushed immediately
+print(f"✅ File received: {filename}, Size: {file_size} bytes", flush=True)
+print(f"⚠️ File Upload Error: {str(e)}", flush=True)
+
