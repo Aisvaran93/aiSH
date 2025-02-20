@@ -16,6 +16,19 @@ body {
     overflow: hidden;
 }
 
+.upload-icon {
+    cursor: pointer;
+    font-size: 20px;
+    margin: 0 10px;
+    color: #007bff;
+    transition: color 0.3s;
+}
+
+.upload-icon:hover {
+    color: #0056b3;
+}
+
+
 .chat-header {
     background: #007bff;
     color: white;
