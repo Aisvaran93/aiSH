@@ -55,11 +55,27 @@ document.getElementById("themeToggle").addEventListener("click", function () {
 });
 
 document.getElementById("fileUpload").addEventListener("change", function(event) {
-    let file = event.target.files[0]; // Get the selected file
+    let file = event.target.files[0];
+
     if (file) {
         let chatbox = document.getElementById("chatbox");
-        appendMessage("You", `📎 Uploaded: ${file.name}`, "user");
+        appendMessage("You", `📎 Uploading: ${file.name}...`, "user");
 
-        // You can implement further logic to upload the file to a server here.
+        let formData = new FormData();
+        formData.append("file", file);
+
+        fetch("https://your-api-url/upload", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            appendMessage("AI", `File received: ${data.file_url}`, "ai");
+        })
+        .catch(error => {
+            appendMessage("AI", "Error: File upload failed.", "ai");
+            console.error("Upload Error:", error);
+        });
     }
 });
+
