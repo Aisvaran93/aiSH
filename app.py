@@ -55,32 +55,37 @@ def chat():
         print(f"⚠️ API Request Error: {str(e)}")
         return jsonify({"error": "Server error. Try again later."}), 500
 
-# New File Upload API
 @app.route("/upload", methods=["POST"])
 def upload_file():
     file_url = None
 
-    # Handle file upload if present
-    if "file" in request.files:
+    try:
+        # Ensure a file is provided
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
         file = request.files["file"]
         filename = werkzeug.utils.secure_filename(file.filename)
-        
-        # Ensure the 'uploads' directory exists
+
+        # Ensure 'uploads' folder exists
         upload_folder = "uploads"
         if not os.path.exists(upload_folder):
             os.makedirs(upload_folder)
 
         file_path = os.path.join(upload_folder, filename)
         file.save(file_path)  # Save file
-        file_url = f"/{file_path}"  # Return file path as URL
 
-    # Handle optional text message
-    user_message = request.form.get("message", "").strip()
+        file_url = f"/{file_path}"  # Return file path
 
-    return jsonify({
-        "message": user_message if user_message else "No text provided",
-        "file_url": file_url if file_url else "No file uploaded"
-    })
+        return jsonify({
+            "message": "File uploaded successfully!",
+            "file_url": file_url
+        })
+
+    except Exception as e:
+        print(f"⚠️ File Upload Error: {str(e)}")  # Logs the error
+        return jsonify({"error": "File upload failed", "details": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
