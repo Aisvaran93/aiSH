@@ -1,8 +1,9 @@
 import os
+import tempfile
+import werkzeug
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
-import werkzeug
 
 app = Flask(__name__)
 CORS(app)
@@ -57,35 +58,29 @@ def chat():
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
-    file_url = None
-
     try:
-        # Ensure a file is provided
+        # Check if a file is provided
         if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
 
         file = request.files["file"]
         filename = werkzeug.utils.secure_filename(file.filename)
 
-        # Ensure 'uploads' folder exists
-        upload_folder = "uploads"
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder)
+        # Use a temporary directory for file storage (since Render's free tier does not support persistent storage)
+        temp_dir = tempfile.gettempdir()  # System temp directory
+        file_path = os.path.join(temp_dir, filename)
+        file.save(file_path)  # Save file in temporary location
 
-        file_path = os.path.join(upload_folder, filename)
-        file.save(file_path)  # Save file
-
-        file_url = f"/{file_path}"  # Return file path
+        print(f"✅ File temporarily saved at: {file_path}")  # Debug log
 
         return jsonify({
             "message": "File uploaded successfully!",
-            "file_url": file_url
+            "file_path": file_path  # Returning temp path for debugging
         })
 
     except Exception as e:
         print(f"⚠️ File Upload Error: {str(e)}")  # Logs the error
         return jsonify({"error": "File upload failed", "details": str(e)}), 500
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
