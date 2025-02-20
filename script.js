@@ -53,3 +53,13 @@ document.getElementById("themeToggle").addEventListener("click", function () {
     document.body.classList.toggle("dark-mode");
     this.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
 });
+
+document.getElementById("fileUpload").addEventListener("change", function(event) {
+    let file = event.target.files[0]; // Get the selected file
+    if (file) {
+        let chatbox = document.getElementById("chatbox");
+        appendMessage("You", `📎 Uploaded: ${file.name}`, "user");
+
+        // You can implement further logic to upload the file to a server here.
+    }
+});
