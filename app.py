@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
+import werkzeug
 
 app = Flask(__name__)
 CORS(app)
@@ -53,6 +54,33 @@ def chat():
     except requests.exceptions.RequestException as e:
         print(f"⚠️ API Request Error: {str(e)}")
         return jsonify({"error": "Server error. Try again later."}), 500
+
+# New File Upload API
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    file_url = None
+
+    # Handle file upload if present
+    if "file" in request.files:
+        file = request.files["file"]
+        filename = werkzeug.utils.secure_filename(file.filename)
+        
+        # Ensure the 'uploads' directory exists
+        upload_folder = "uploads"
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)  # Save file
+        file_url = f"/{file_path}"  # Return file path as URL
+
+    # Handle optional text message
+    user_message = request.form.get("message", "").strip()
+
+    return jsonify({
+        "message": user_message if user_message else "No text provided",
+        "file_url": file_url if file_url else "No file uploaded"
+    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
