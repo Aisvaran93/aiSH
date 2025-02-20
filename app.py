@@ -17,7 +17,7 @@ if not OPENAI_API_KEY:
     raise ValueError("🚨 ERROR: OpenAI API Key is not set! Add it in Render's environment variables.")
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
-AVAILABLE_MODELS = ["gpt-4o-mini", "gpt-4o-mini-2024-07-18", "gpt-3.5-turbo", "gpt-3.5-turbo-1106"]
+DEFAULT_MODEL = "gpt-4o-mini"  # Set GPT-4o-mini as the default model
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -31,25 +31,24 @@ def chat():
         "Content-Type": "application/json"
     }
 
-    for model in AVAILABLE_MODELS:
-        payload = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": "You are a helpful AI assistant."},
-                {"role": "user", "content": user_message}
-            ]
-        }
+    payload = {
+        "model": DEFAULT_MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a helpful AI assistant."},
+            {"role": "user", "content": user_message}
+        ]
+    }
 
-        try:
-            response = requests.post(OPENAI_URL, json=payload, headers=headers, timeout=10)
-            if response.status_code == 200:
-                return jsonify(response.json())
-            else:
-                print(f"⚠️ Model {model} failed: {response.text}")
-        except requests.exceptions.RequestException as e:
-            print(f"⚠️ Error using model {model}: {str(e)}")
-
-    return jsonify({"error": "All models failed. Check your API key or OpenAI status."}), 500
+    try:
+        response = requests.post(OPENAI_URL, json=payload, headers=headers, timeout=10)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            print(f"⚠️ OpenAI API error: {response.text}")
+            return jsonify({"error": "OpenAI API error"}), response.status_code
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ API Request Error: {str(e)}")
+        return jsonify({"error": "Server error. Try again later."}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
