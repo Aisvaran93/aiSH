@@ -22,7 +22,7 @@ DEFAULT_MODEL = "gpt-4o-mini"  # Set GPT-4o-mini as the default model
 @app.route("/chat", methods=["POST"])
 def chat():
     user_message = request.json.get("message", "").strip()
-    
+
     if not user_message:
         return jsonify({"error": "No message provided"}), 400
 
@@ -39,10 +39,14 @@ def chat():
         ]
     }
 
+    print(f"🚀 Using model: {DEFAULT_MODEL}")  # Log model usage
+
     try:
         response = requests.post(OPENAI_URL, json=payload, headers=headers, timeout=10)
         if response.status_code == 200:
-            return jsonify(response.json())
+            response_data = response.json()
+            response_data["model"] = DEFAULT_MODEL  # Explicitly show the model in response
+            return jsonify(response_data)
         else:
             print(f"⚠️ OpenAI API error: {response.text}")
             return jsonify({"error": "OpenAI API error"}), response.status_code
